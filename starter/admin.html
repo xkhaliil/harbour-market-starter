@@ -18,28 +18,77 @@
 
     <form class="token-form">
       <label for="token">Token</label>
-      <input id="token" name="token" type="password" autocomplete="off" required>
+      <input id="token" name="token" type="password" autocomplete="off">
       <button type="submit">Use this token</button>
       <p class="token-status" role="status"></p>
     </form>
 
     <p class="admin-status" role="status"></p>
     <p class="admin-error" role="alert"></p>
+    <button class="admin-retry" type="button" hidden>Try again</button>
 
+    <section class="editor" aria-labelledby="editor-title">
+      <h2 id="editor-title">Add a stall</h2>
+      <form class="stall-editor" novalidate>
+        <fieldset class="editor-fields">
+          <div class="editor-grid">
+            <div class="editor-field">
+              <label for="stall-name">Name</label>
+              <input id="stall-name" name="name" type="text" maxlength="40" aria-describedby="error-name">
+              <small class="field-error" id="error-name" hidden></small>
+            </div>
+            <div class="editor-field">
+              <label for="stall-tag">Category</label>
+              <select id="stall-tag" name="tag" aria-describedby="error-tag">
+                <option value="food">Food</option>
+                <option value="music">Music</option>
+                <option value="crafts">Crafts</option>
+                <option value="drinks">Drinks</option>
+              </select>
+              <small class="field-error" id="error-tag" hidden></small>
+            </div>
+            <div class="editor-field">
+              <label for="stall-price">Price (€)</label>
+              <input id="stall-price" name="price" type="number" min="0" max="100" step="1" aria-describedby="error-price">
+              <small class="field-error" id="error-price" hidden></small>
+            </div>
+            <div class="editor-field editor-field-wide">
+              <label for="stall-blurb">Description</label>
+              <textarea id="stall-blurb" name="blurb" rows="3" maxlength="200" aria-describedby="error-blurb"></textarea>
+              <small class="field-error" id="error-blurb" hidden></small>
+            </div>
+            <div class="editor-field editor-field-check">
+              <label><input name="soldOut" type="checkbox"> Sold out</label>
+              <small class="field-error" id="error-soldOut" hidden></small>
+            </div>
+          </div>
+          <p class="editor-error" role="alert" hidden></p>
+          <div class="editor-actions">
+            <button class="editor-submit" type="submit">Add stall</button>
+            <button class="editor-cancel" type="button" hidden>Cancel edit</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+
+    <h2 class="table-heading">Current stalls</h2>
+    <div class="table-scroll">
     <table class="stalls">
       <thead>
-        <tr><th scope="col">Name</th><th scope="col">Tag</th><th scope="col">Price</th><th scope="col">Sold out</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+        <tr><th scope="col">Name</th><th scope="col">Category</th><th scope="col">Price</th><th scope="col">Description</th><th scope="col">Sold out</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
       </thead>
       <tbody></tbody>
     </table>
+    </div>
 
     <template id="row-template">
       <tr>
         <td class="name"></td>
         <td class="tag"></td>
         <td class="price"></td>
-        <td><input class="sold-out" type="checkbox"></td>
-        <td><button class="remove" type="button">Remove</button></td>
+        <td class="blurb"></td>
+        <td><label class="sold-out-label"><input class="sold-out" type="checkbox"> <span class="visually-hidden">Sold out</span></label><small class="row-error" hidden></small></td>
+        <td class="row-actions"><button class="edit" type="button">Edit</button><button class="remove" type="button">Remove</button></td>
       </tr>
     </template>
   </main>

@@ -1,12 +1,70 @@
-/* Team brief 5 starter: the admin page. Change freely. */
-.admin { max-width: 60rem; margin: 0 auto; padding: 2rem 1.25rem; }
+[hidden] { display: none !important; }
+.admin { max-width: 76rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
 .admin h1 { font: 400 2.6rem/1 "Instrument Serif", Georgia, serif; margin: 0.5rem 0 1.5rem; }
-.token-form { display: flex; flex-wrap: wrap; gap: 0.5rem 0.8rem; align-items: center; margin-bottom: 1.5rem; }
-.token-form input { font: inherit; color: var(--ink); background: var(--night-2); border: 2px solid var(--line); border-radius: 8px; padding: 0.4rem 0.6rem; }
-.token-form button, .remove { font: 700 0.9rem system-ui, sans-serif; color: var(--night); background: var(--lantern); border: 0; border-radius: 99px; padding: 0.5rem 1rem; cursor: pointer; }
+.admin h2 { margin: 0 0 1rem; font-size: 1.45rem; }
+.token-form { display: flex; flex-wrap: wrap; gap: 0.5rem 0.8rem; align-items: center; margin-bottom: 1.25rem; }
+.token-form label { font-weight: 700; }
+.token-form input { width: min(100%, 24rem); font: inherit; color: var(--ink); background: var(--night-2); border: 2px solid var(--line); border-radius: 7px; padding: 0.5rem 0.65rem; }
+.token-form button, .admin-retry, .editor-submit { font: 700 0.9rem "Bricolage Grotesque", system-ui, sans-serif; color: var(--night); background: var(--lantern); border: 0; border-radius: 7px; padding: 0.65rem 0.9rem; cursor: pointer; }
 .token-status, .admin-status { margin: 0; color: var(--ink-2); }
-.admin-error { color: var(--ember); }
+.admin-error, .editor-error { color: var(--ember); }
+.admin-retry { margin: 0.5rem 0 1rem; }
+.editor { margin: 1.5rem 0 2rem; padding: 1.25rem; background: var(--night-2); border: 1px solid var(--line); border-radius: 10px; }
+.editor-fields { min-width: 0; margin: 0; padding: 0; border: 0; }
+.editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem 1rem; }
+.editor-field { min-width: 0; display: grid; align-content: start; gap: 0.3rem; }
+.editor-field-wide { grid-column: 1 / -1; }
+.editor-field label { font-weight: 700; }
+.editor-field input:not([type="checkbox"]), .editor-field select, .editor-field textarea {
+	width: 100%;
+	min-width: 0;
+	color: var(--ink);
+	background: var(--night);
+	border: 2px solid var(--line);
+	border-radius: 7px;
+	padding: 0.55rem 0.7rem;
+	font: inherit;
+}
+.editor-field textarea { resize: vertical; }
+.editor-field-check { align-self: center; }
+.editor-field-check label { display: flex; align-items: center; gap: 0.55rem; }
+.field-error { color: var(--ember); min-height: 1.2em; }
+.editor-field [aria-invalid="true"] { border-color: var(--ember); }
+.editor-error { margin: 0.75rem 0 0; }
+.editor-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+.editor-cancel, .edit, .remove {
+	font: 700 0.9rem "Bricolage Grotesque", system-ui, sans-serif;
+	border: 1px solid var(--line);
+	border-radius: 7px;
+	padding: 0.55rem 0.8rem;
+	cursor: pointer;
+}
+.editor-cancel, .edit { color: var(--sea); background: var(--night-3); }
+.remove { color: var(--ink); background: transparent; border-color: var(--ember); }
+.editor-cancel:hover, .edit:hover { border-color: var(--sea); }
+.remove:hover { background: rgb(255 107 74 / 0.16); }
+.table-heading { margin-top: 2rem !important; }
+.table-scroll { width: 100%; overflow-x: auto; }
 .stalls { width: 100%; border-collapse: collapse; }
-.stalls th, .stalls td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--line); }
-.stalls tr[aria-busy="true"] { opacity: 0.5; }
+.stalls th, .stalls td { text-align: left; vertical-align: top; padding: 0.65rem 0.6rem; border-bottom: 1px solid var(--line); }
+.stalls th { color: var(--sea); font-size: 0.8rem; text-transform: uppercase; }
+.stalls td.name { min-width: 9rem; font-weight: 700; }
+.stalls td.blurb { min-width: 15rem; color: var(--ink-2); }
+.stalls td.price { white-space: nowrap; }
+.stalls tr[aria-busy="true"] { opacity: 0.58; }
+.row-actions { white-space: nowrap; }
+.row-actions button + button { margin-left: 0.35rem; }
+.sold-out-label { display: inline-flex; align-items: center; min-height: 2rem; }
+.row-error { display: block; max-width: 12rem; color: var(--ember); }
+.table-message { color: var(--ink-2); padding-block: 1.25rem !important; }
+.stalls input:focus-visible, .admin button:focus-visible, .admin input:focus-visible,
+.admin select:focus-visible, .admin textarea:focus-visible { outline: 3px solid var(--sea); outline-offset: 2px; }
+.admin button:disabled, .admin input:disabled, .admin select:disabled, .admin textarea:disabled { opacity: 0.55; cursor: wait; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (width < 42rem) {
+	.admin { padding-inline: 1rem; }
+	.editor { padding: 1rem; }
+	.editor-grid { grid-template-columns: minmax(0, 1fr); }
+	.editor-field-wide { grid-column: auto; }
+}
