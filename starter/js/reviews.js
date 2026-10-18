@@ -57,13 +57,17 @@ export function setupReviews() {
     for (const name of ["author", "rating", "text"]) clearFieldError(name);
   }
 
-  async function updateStallRating(stallId, currentReviews) {
+  // `currentReviews` is the stall's full review list, or null when it never loaded: then the
+  // stall's own totals are adjusted by the one review that was added (+1) or removed (-1).
+  async function updateStallRating(stallId, currentReviews, changedReview, direction) {
     const stall = state.stalls.find((item) => item.id === stallId);
     if (!stall) return;
-    stall.reviewCount = currentReviews.length;
-    stall.rating = currentReviews.length
-      ? Math.round(currentReviews.reduce((sum, review) => sum + review.rating, 0) / currentReviews.length * 10) / 10
-      : null;
+    const count = currentReviews ? currentReviews.length : Math.max(0, stall.reviewCount + direction);
+    const sum = currentReviews
+      ? currentReviews.reduce((total, review) => total + review.rating, 0)
+      : (stall.rating ?? 0) * stall.reviewCount + direction * changedReview.rating;
+    stall.reviewCount = count;
+    stall.rating = count ? Math.round(sum / count * 10) / 10 : null;
     const version = (ratingRefreshVersions.get(stallId) ?? 0) + 1;
     ratingRefreshVersions.set(stallId, version);
     render();
@@ -124,10 +128,12 @@ export function setupReviews() {
         ? `${reviews.length} ${reviews.length === 1 ? "review" : "reviews"}`
         : "";
     errorMessage.textContent = loadError
-      ? `Could not load reviews: ${describe(loadError)}.`
+      ? `Could not load ${reviews.length ? "the other reviews" : "reviews"}: ${describe(loadError)}.`
       : actionError;
     errorMessage.hidden = !loadError && !actionError;
     retryButton.hidden = loadState !== "error";
+    // A reload would replace the list a pending post or delete is about to update.
+    retryButton.disabled = posting || deletingIds.size > 0;
     reviewList.setAttribute("aria-busy", String(loadState === "loading"));
     reviewList.replaceChildren();
 
@@ -141,12 +147,15 @@ export function setupReviews() {
       empty.className = "review-empty";
       empty.textContent = "No reviews yet: be the first.";
       reviewList.append(empty);
-    } else if (loadState === "ready") {
+    } else if (loadState !== "idle") {
+      // After a failed load this holds only the reviews posted since, so people still see theirs.
       reviewList.append(...reviews.map(createReviewItem));
     }
 
-    fields.disabled = posting || loadState !== "ready";
-    submitButton.disabled = posting || loadState !== "ready";
+    // Posting is its own endpoint: a failed load must not stop anyone writing a review.
+    // Only an in-flight load locks the form, since its answer replaces the list.
+    fields.disabled = posting || loadState === "loading";
+    submitButton.disabled = posting || loadState === "loading";
   }
 
   async function loadReviews(stall) {
@@ -196,9 +205,10 @@ export function setupReviews() {
   form.addEventListener("change", (event) => clearFieldError(event.target.name));
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!activeStall || posting || loadState !== "ready") return;
+    if (!activeStall || posting || loadState === "loading") return;
 
     const stall = activeStall;
+    const listLoaded = loadState === "ready";
     const existingReviews = [...reviews];
     const data = new FormData(form);
     const payload = {
@@ -218,7 +228,7 @@ export function setupReviews() {
       ownedReviewIds.add(review.id);
       persistOwnedReviewIds();
       const updatedReviews = [review, ...existingReviews];
-      updateStallRating(stall.id, updatedReviews);
+      updateStallRating(stall.id, listLoaded ? updatedReviews : null, review, 1);
       if (activeStall?.id === stall.id && dialog.open) {
         reviews = updatedReviews;
         form.reset();
@@ -258,6 +268,8 @@ export function setupReviews() {
 
     const stall = activeStall;
     const reviewId = button.dataset.reviewId;
+    const listLoaded = loadState === "ready";
+    const removedReview = reviews.find((review) => review.id === reviewId);
     const remainingReviews = reviews.filter((review) => review.id !== reviewId);
     deletingIds.add(reviewId);
     actionError = "";
@@ -267,7 +279,7 @@ export function setupReviews() {
       await request("DELETE", `/reviews/${encodeURIComponent(reviewId)}`);
       ownedReviewIds.delete(reviewId);
       persistOwnedReviewIds();
-      updateStallRating(stall.id, remainingReviews);
+      updateStallRating(stall.id, listLoaded ? remainingReviews : null, removedReview, -1);
       if (activeStall?.id === stall.id) reviews = remainingReviews;
     } catch (error) {
       if (activeStall?.id === stall.id) actionError = `Could not delete the review: ${describe(error)}.`;
